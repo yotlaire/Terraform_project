@@ -1,0 +1,31 @@
+---
+- name: Update and Upgrade servers (ec2)
+  hosts: "*"
+  become: yes
+  tasks:
+    - name: Update the system
+      yum:
+        name: "*"
+        state: latest
+    - name: Upgrade the system
+      yum:
+        name: "*"
+        state: latest
+
+- name: Update and install Python
+  become: yes
+  tasks:
+    - name: Check if Python is already the latest version
+      command: python3 --version
+      register: python_version_result
+      failed_when: "{{ python_version_result.stdout | replace('Python ', '') | version_compare(python_version, '>=') }}"
+    - name: Install Python prerequisites
+      yum:
+        name: python3-pip
+        state: present
+    - name: Install Python
+      yum:
+        name: python3
+        state: present
+    - name: Reboot the system if necessary
+      reboot:
